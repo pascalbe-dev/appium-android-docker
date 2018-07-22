@@ -73,6 +73,12 @@ EXPOSE 4723
 # EXPOSE VNC PORT
 EXPOSE 5900
 
+RUN apt-get install -y git \
+    && git clone https://github.com/novnc/noVNC.git
+
+# EXPOSE NOVNC PORT
+EXPOSE 6080
+
 COPY ./entrypoint.sh /root/entrypoint.sh
 # RUN STARTUP SCRIPT
 ENTRYPOINT [ "./entrypoint.sh" ]
