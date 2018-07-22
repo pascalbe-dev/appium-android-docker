@@ -1,87 +1,78 @@
-# derive from linux ubuntu to mimic our company's environment
+# USE UBUNTU TO HAVE SAME ENVIRONMENT LIKE ON COMPANY SLAVES
 FROM ubuntu
 
+# BUILD ARGUMENTS
+ARG sdkTools=4333796
 ARG systemImage
 ARG platform
-ARG buildTools
-ARG appiumVersion
+ARG buildTools=28.0.1
+ARG appiumVersion=1.8.1
 
-# GENERAL REQUIREMENTS
+WORKDIR /root
+LABEL maintainer="Pascal Betting, pascal.betting@intive.com"
+
+# PACKAGE DEPENDENCIES
 RUN apt-get update && apt-get -y install \
     wget \
     curl \
     unzip \
-    openjdk-8-jre-headless
-
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
-
-# ANDROID SDK
-# download android sdk and unzip it to an appropriate folder
-RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip \
-    && mkdir -p /usr/local/android/sdk \
-    && unzip -d /usr/local/android/sdk sdk-tools-linux-4333796.zip \
-    && rm sdk-tools-linux-4333796.zip
-
-# set android home env variable because appium requires that
-ENV ANDROID_HOME=/usr/local/android/sdk/
-# add sdk manager to path, so it can be used from everywhere
-ENV PATH="/usr/local/android/sdk/tools/bin:${PATH}"
-ENV PATH="/usr/local/android/sdk/emulator:${PATH}"
-ENV PATH="/usr/local/android/sdk/platform-tools:${PATH}"
-ENV PATH="/usr/local/android/sdk/build-tools/${buildTools}:${PATH}"
-# create empty file to avoid warning
-RUN mkdir $HOME/.android
-RUN touch $HOME/.android/repositories.cfg
-# emulator dependencies
-RUN apt-get install -y \
+    openjdk-8-jre-headless \
     libglu1 \
-    libpulse0
-# install android SDK packages
-RUN echo 'y' | sdkmanager 'platform-tools'
-RUN echo 'y' | sdkmanager 'emulator'
-RUN echo 'y' | sdkmanager $platform
-RUN echo 'y' | sdkmanager $systemImage
-RUN echo 'y' | sdkmanager "build-tools;${buildTools}"
-# create AVD
-RUN avdmanager create avd --name Nexus5_OS8.0.0 --device "Nexus 5" --package $systemImage
-# make sure the UI is shared over display 0
+    libpulse0 \
+    make \
+    g++ \
+    gnupg \
+    gnupg1 \
+    gnupg2 \
+    tightvncserver
+
+# JAVA REQUIRED BY ANDROID SDK
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+# ANDROID HOME REQUIRED BY APPIUM (WITH PATHS)
+ENV ANDROID_HOME=/usr/local/android/sdk/
+ENV PATH="${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools${PATH}"
+ENV PATH="${ANDROID_HOME}/build-tools/${buildTools}:${PATH}"
+# USER & DISPLAY REQUIRED BY VNC
+ENV USER=root
 ENV DISPLAY=:0
 
-# VNC
-# install server
-RUN apt-get install -y tightvncserver
-# set user which is required for starting server
-ENV USER=root
-# set password
-RUN mkdir ~/.vnc && \
-    echo "abcdefgh" | vncpasswd -f > ~/.vnc/passwd
-# copy VNC settings
-COPY xstartup /root/.vnc/xstartup
-# make executable
-RUN chmod +x /root/.vnc/xstartup
-## start VNC server
-#RUN vncserver :0
-# expose vnc port
+
+# ANDROID SDK
+# SDK TOOLS VERSION SHOULD BE KEPT UP TO DATE
+RUN wget https://dl.google.com/android/repository/sdk-tools-linux-${sdkTools}.zip \
+    && mkdir -p /usr/local/android/sdk \
+    && unzip -d /usr/local/android/sdk sdk-tools-linux-${sdkTools}.zip \
+    && rm sdk-tools-linux-${sdkTools}.zip \
+    && mkdir -p $HOME/.android \
+    && touch $HOME/.android/repositories.cfg
+
+# SDK PACKAGES (PIPE IN "Y" TO AVOID DIALOG PROMPT)
+# LATEST VERSIONS FOR PLATFORM-TOOLS & EMULATOR
+RUN echo 'y' | sdkmanager 'platform-tools' \
+    && echo 'y' | sdkmanager 'emulator'
+# OTHER PACKAGES DEPEND ON PARAMETERS
+RUN echo 'y' | sdkmanager $platform
+RUN echo 'y' | sdkmanager "build-tools;${buildTools}"
+RUN echo 'y' | sdkmanager $systemImage \
+    && avdmanager create avd --name "emulator" --device "Nexus 5" --package $systemImage
+
+# INSTALL NODEJS + NPM AFTER ADDING THE APT REPOSITORY
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g --unsafe-perm=true --only=production appium@${appiumVersion}
+
+
+# SETUP VNC
+# SOMEHOW THE FILE NEEDS 600 PERMISSIONS TO BE RECOGNIZED BY THE vncserver executable
+RUN mkdir ~/.vnc \
+    && echo "abcdef" | vncpasswd -f > ~/.vnc/passwd \
+    && chmod 600 $HOME/.vnc/passwd
+
+# EXPOSE APPIUM PORT
+EXPOSE 4723
+# EXPOSE VNC PORT
 EXPOSE 5900
 
-# APPIUM
-# node dependencies
-RUN apt-get install -y gnupg \
-    gnupg2 \
-    gnupg1
-# add node-source to apt-get
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-# install appium dependencies
-RUN apt-get install -y make \
-    g++
-# install nodejs
-RUN apt-get install -y nodejs
-# move to home folder
-WORKDIR /root
-# install appium locally (globally produces an error)
-RUN npm i appium@$appiumVersion
-# expose appium port
-EXPOSE 4723
-
-# start appium on container startup
-#ENTRYPOINT [ "/root/node_modules/.bin/appium " ]
+COPY ./entrypoint.sh /root/entrypoint.sh
+# RUN STARTUP SCRIPT
+ENTRYPOINT [ "./entrypoint.sh" ]

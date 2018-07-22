@@ -1,40 +1,55 @@
 # derive from linux alpine as it is small and does not contain unneccessary content
 FROM alpine
 
+ARG sdkTools=4333796
+ARG systemImage
+ARG platform
+ARG buildTools=28.0.1
+ARG appiumVersion=1.8.1
+
+WORKDIR /root
+LABEL maintainer="Pascal Betting, pascal.betting@intive.com"
+
 # install appium requirements
 RUN apk update && apk add --no-cache \
     g++ \
     make \
-    python2 \
     nodejs \
     openjdk8-jre
 
-# add python path to env variable because appium requires that
-ENV PYTHON=/usr/bin/python
-# add java home which is required for appium android
+# JAVA REQUIRED BY ANDROID SDK
 ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk/
-
-# download android sdk and unzip it to an appropriate folder
-RUN wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip \
-    && mkdir -p /usr/local/android/sdk \
-    && unzip -d /usr/local/android/sdk sdk-tools-linux-3859397.zip
-
-# set android home env variable because appium requires that
+# ANDROID HOME REQUIRED BY APPIUM (WITH PATHS)
 ENV ANDROID_HOME=/usr/local/android/sdk/
-# add sdk manager to path, so it can be used from everywhere
-ENV PATH="/usr/local/android/sdk/tools/bin:${PATH}"
-ENV PATH="/usr/local/android/sdk/emulator:${PATH}"
-ENV PATH="/usr/local/android/sdk/platform-tools:${PATH}"
+ENV PATH="${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools${PATH}"
+ENV PATH="${ANDROID_HOME}/build-tools/${buildTools}:${PATH}"
+# USER & DISPLAY REQUIRED BY VNC
+ENV USER=root
+ENV DISPLAY=:0
 
-# skip the terminal interaction
-# install platform-tools, emulator, emulator-image
-RUN echo 'y' | sdkmanager 'platform-tools'
-RUN echo 'y' | sdkmanager 'emulator'
-RUN echo 'y' | sdkmanager 'system-images;android-26;google_apis_playstore;x86'
+# ANDROID SDK
+# SDK TOOLS VERSION SHOULD BE KEPT UP TO DATE
+RUN wget https://dl.google.com/android/repository/sdk-tools-linux-${sdkTools}.zip \
+    && mkdir -p /usr/local/android/sdk \
+    && unzip -d /usr/local/android/sdk sdk-tools-linux-${sdkTools}.zip \
+    && rm sdk-tools-linux-${sdkTools}.zip \
+    && mkdir -p $HOME/.android \
+    && touch $HOME/.android/repositories.cfg
 
-# install appium via node package manager
-# additional flags are needed to install further software which comes with appium
-#RUN npm install -g appium --unsafe-perm=true --allow-root
+# SDK PACKAGES (PIPE IN "Y" TO AVOID DIALOG PROMPT)
+# LATEST VERSIONS FOR PLATFORM-TOOLS & EMULATOR
+RUN echo 'y' | sdkmanager 'platform-tools' \
+    && echo 'y' | sdkmanager 'emulator'
+# OTHER PACKAGES DEPEND ON PARAMETERS
+RUN echo 'y' | sdkmanager $platform
+RUN echo 'y' | sdkmanager "build-tools;${buildTools}"
+RUN echo 'y' | sdkmanager $systemImage \
+    && avdmanager create avd --name "emulator" --device "Nexus 5" --package $systemImage
+
+# INSTALLATION OF APPIUM
+# avoid installing dev dependencies
+# allow root access for further install scripts of the packages
+RUN npm install -g --unsafe-perm=true --only=production appium@${appiumVersion}
 
 # expose default appium port
 EXPOSE 4723
