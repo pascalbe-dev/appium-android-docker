@@ -15,18 +15,18 @@ PATH="$PATH:/usr/X11R6/bin/"
 DISPLAY="0"
 
 # Color depth (between 8 and 32)
-DEPTH="16"
+# DEPTH="16"
 
 # The Desktop geometry to use.
 #GEOMETRY="<WIDTH>x<HEIGHT>"
 #GEOMETRY="800x600"
-GEOMETRY="1024x768"
+#GEOMETRY="1024x768"
 #GEOMETRY="1280x1024"
 
 # The name that the VNC Desktop will have.
 NAME="emulator-vncserver"
 
-OPTIONS="-name ${NAME} -depth ${DEPTH} -geometry ${GEOMETRY} :${DISPLAY}"
+OPTIONS="-name ${NAME} :${DISPLAY}"
 
 . /lib/lsb/init-functions
 
