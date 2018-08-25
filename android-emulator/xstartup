@@ -1,0 +1,4 @@
+#!/bin/sh
+
+xsetroot -solid black
+i3 &
