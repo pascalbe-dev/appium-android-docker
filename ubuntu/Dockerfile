@@ -3,8 +3,8 @@ FROM ubuntu
 
 # BUILD ARGUMENTS
 ARG sdkTools=4333796
-ARG systemImage
-ARG platform
+ARG systemImage=system-images;android-28;google_apis_playstore;x86_64
+ARG platform=28
 ARG buildTools=28.0.1
 ARG appiumVersion=1.8.1
 
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get -y install \
 # JAVA REQUIRED BY ANDROID SDK
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 # ANDROID HOME REQUIRED BY APPIUM (WITH PATHS)
-ENV ANDROID_HOME=/usr/local/android/sdk/
+ENV ANDROID_HOME=/usr/local/android/sdk
 ENV PATH="${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools${PATH}"
 ENV PATH="${ANDROID_HOME}/build-tools/${buildTools}:${PATH}"
 # USER & DISPLAY REQUIRED BY VNC
