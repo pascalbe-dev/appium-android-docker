@@ -12,7 +12,7 @@ PATH="$PATH:/usr/X11R6/bin/"
 #${RUNAS}
 
 # The display that VNC will use
-DISPLAY="1"
+DISPLAY="0"
 
 # Color depth (between 8 and 32)
 DEPTH="16"

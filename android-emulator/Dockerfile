@@ -21,7 +21,7 @@ RUN mkdir $ANDROID_HOME/platform-tools && \
     # && avdmanager create avd --name $avdDeviceName --device $deviceModelName --package $systemImage
 
 # INSTAL REQUIRED PACKAGES FOR THE EMULATOR RUN
-RUN apt-get install -y libglu1 libpulse0 tightvncserver
+RUN apt-get install -y libglu1 libpulse0 tightvncserver i3
 
 # ADD CONFIGURATION AND SERVICE FOR VNC SERVER
 COPY vncserver ~/.vnc/xstartup
@@ -32,3 +32,6 @@ COPY xstartup /etc/init.d/vncserver
 RUN mkdir ~/.vnc \
     && echo "abcdef" | vncpasswd -f > ~/.vnc/passwd \
     && chmod 600 $HOME/.vnc/passwd
+
+ENV DISPLAY=:0
+ENV USER=root
