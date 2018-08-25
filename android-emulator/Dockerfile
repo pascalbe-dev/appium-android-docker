@@ -24,8 +24,8 @@ RUN mkdir $ANDROID_HOME/platform-tools && \
 RUN apt-get install -y libglu1 libpulse0 tightvncserver i3
 
 # ADD CONFIGURATION AND SERVICE FOR VNC SERVER
-COPY vncserver ~/.vnc/xstartup
-COPY xstartup /etc/init.d/vncserver
+COPY xstartup ~/.vnc/xstartup
+COPY vncserver /etc/init.d/vncserver
 
 # SETUP VNC
 # SOMEHOW THE FILE NEEDS 600 PERMISSIONS TO BE RECOGNIZED BY THE vncserver executable
