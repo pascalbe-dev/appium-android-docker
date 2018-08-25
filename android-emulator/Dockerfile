@@ -24,7 +24,7 @@ RUN mkdir $ANDROID_HOME/platform-tools && \
 RUN apt-get install -y libglu1 libpulse0 tightvncserver i3
 
 # ADD CONFIGURATION AND SERVICE FOR VNC SERVER
-COPY xstartup ~/.vnc/xstartup
+COPY xstartup /root/.vnc/xstartup
 COPY vncserver /etc/init.d/vncserver
 
 # SETUP VNC
@@ -35,3 +35,5 @@ RUN mkdir ~/.vnc \
 
 ENV DISPLAY=:0
 ENV USER=root
+
+CMD service vncserver start && tail -F /root/.vnc/*:0.log

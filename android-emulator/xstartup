@@ -1,4 +1,5 @@
 #!/bin/sh
 
 xsetroot -solid black
+i3 &
 emulator -avd emulator -no-boot-anim -noaudio -gpu swiftshader_indirect -verbose &
