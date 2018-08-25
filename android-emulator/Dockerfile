@@ -32,6 +32,8 @@ COPY vncserver /etc/init.d/vncserver
 RUN echo "abcdef" | vncpasswd -f > ~/.vnc/passwd \
     && chmod 600 $HOME/.vnc/passwd
 
+RUN echo 'y' | sdkmanager 'platform-tools'
+
 ENV DISPLAY=:0
 ENV USER=root
 
