@@ -47,13 +47,13 @@ RUN wget https://dl.google.com/android/repository/sdk-tools-linux-${sdkTools}.zi
     && touch $HOME/.android/repositories.cfg
 
 # SDK PACKAGES (PIPE IN "Y" TO AVOID DIALOG PROMPT)
-# LATEST VERSIONS FOR PLATFORM-TOOLS & EMULATOR
+#   LATEST VERSIONS FOR PLATFORM-TOOLS & EMULATOR
+#   OTHER PACKAGES DEPEND ON PARAMETERS
 RUN echo 'y' | sdkmanager 'platform-tools' \
     && echo 'y' | sdkmanager 'emulator'
-# OTHER PACKAGES DEPEND ON PARAMETERS
-RUN echo 'y' | sdkmanager $platform
-RUN echo 'y' | sdkmanager "build-tools;${buildTools}"
-RUN echo 'y' | sdkmanager $systemImage \
+RUN echo 'y' | sdkmanager "platforms;android-${platform}" \
+    && echo 'y' | sdkmanager "build-tools;${buildTools}" \
+    && echo 'y' | sdkmanager $systemImage \
     && avdmanager create avd --name "emulator" --device "Nexus 5" --package $systemImage
 
 # INSTALL NODEJS + NPM AFTER ADDING THE APT REPOSITORY
