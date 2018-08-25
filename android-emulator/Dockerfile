@@ -11,9 +11,11 @@ LABEL maintainer="Pascal Betting, pascal.betting@intive.com"
 # INSTALL REQUIRED SDK PACKAGES + VIRTUAL DEVICE
 RUN echo 'y' | sdkmanager 'emulator' && echo 'y' | sdkmanager $systemImage
 RUN avdmanager create avd --name "$avdDeviceName" --device "$deviceModelName" --package "$systemImage"
+RUN mkdir $ANDROID_HOME/platform-tools && \
+    mkdir $ANDROID_HOME/platforms
     # && echo 'y' | sdkmanager 'platform-tools' \
     # && echo 'y' | sdkmanager "build-tools;${buildTools}" \
     # && echo 'y' | sdkmanager $systemImage \
     # && avdmanager create avd --name $avdDeviceName --device $deviceModelName --package $systemImage
 
-RUN apt-get install -y libglu1
+RUN apt-get install -y libglu1 libpulse0
