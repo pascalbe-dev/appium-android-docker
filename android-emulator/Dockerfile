@@ -29,7 +29,7 @@ COPY vncserver /etc/init.d/vncserver
 
 # SETUP VNC
 # SOMEHOW THE FILE NEEDS 600 PERMISSIONS TO BE RECOGNIZED BY THE vncserver executable
-RUN && echo "abcdef" | vncpasswd -f > ~/.vnc/passwd \
+RUN echo "abcdef" | vncpasswd -f > ~/.vnc/passwd \
     && chmod 600 $HOME/.vnc/passwd
 
 ENV DISPLAY=:0
