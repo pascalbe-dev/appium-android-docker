@@ -30,8 +30,7 @@ RUN apt-get update && apt-get -y install \
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 # ANDROID HOME REQUIRED BY APPIUM (WITH PATHS)
 ENV ANDROID_HOME=/usr/local/android/sdk
-ENV PATH="${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools${PATH}"
-ENV PATH="${ANDROID_HOME}/build-tools/${buildTools}:${PATH}"
+ENV PATH="${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/build-tools/${buildTools}:${PATH}"
 # USER & DISPLAY REQUIRED BY VNC
 ENV USER=root
 ENV DISPLAY=:0
